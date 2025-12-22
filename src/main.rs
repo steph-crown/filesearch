@@ -61,7 +61,10 @@ fn find_and_write_matches(
     }
 
     if path.is_dir() {
-      let _ = find_and_write_matches(pattern, &path, writer);
+      if let Err(err) = find_and_write_matches(pattern, &path, writer) {
+        let err_msg = get_msg_from_io_error(&err);
+        writeln!(writer, "filesearch: {}: {}", path.display(), err_msg).unwrap();
+      }
     }
   }
 
