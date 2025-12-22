@@ -34,6 +34,8 @@ fn get_msg_from_io_error(err: &io::Error) -> String {
 
   if kind == io::ErrorKind::NotFound {
     String::from("no such file or directory")
+  } else if kind == io::ErrorKind::PermissionDenied {
+    String::from("permission denied")
   } else {
     String::from("unknown error")
   }
@@ -44,7 +46,7 @@ fn parse_input() -> CliArgs {
 }
 
 fn find_and_write_matches(
-  pattern: &String,
+  pattern: &str,
   directory: &PathBuf,
   writer: &mut impl std::io::Write,
 ) -> Result<(), io::Error> {
@@ -66,7 +68,7 @@ fn find_and_write_matches(
   Ok(())
 }
 
-fn does_file_or_dir_match_pattern(pattern: &String, directory: &PathBuf) -> bool {
+fn does_file_or_dir_match_pattern(pattern: &str, directory: &PathBuf) -> bool {
   if let Some(file_or_dir_name) = directory.file_name() {
     let file_or_dir_name = file_or_dir_name.display().to_string();
 
