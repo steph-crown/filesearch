@@ -21,6 +21,7 @@ fn main() {
 
 fn run() -> Result<(), String> {
   let args = parse_input();
+  // println!("{:#?}", args);
   let _b = validate_args(&args)?;
 
   Ok(())
@@ -30,10 +31,7 @@ fn parse_input() -> CliArgs {
   CliArgs::parse()
 }
 
+// for now, we're not doing any validation
 fn validate_args(args: &CliArgs) -> Result<&CliArgs, String> {
-  if args.pattern == "aaa" {
-    Ok(args)
-  } else {
-    Err(format!("{}: invalid argument", args.pattern))
-  }
+  Ok(args)
 }
