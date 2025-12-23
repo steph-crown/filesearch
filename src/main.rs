@@ -20,10 +20,9 @@ fn main() {
 }
 
 fn run() -> Result<(), String> {
-  let args = parse_input();
-  let CliArgs { pattern, directory } = validate_args(&args)?;
+  let CliArgs { pattern, directory } = CliArgs::parse();
 
-  find_and_write_matches(pattern, directory, &mut std::io::stdout())
+  find_and_write_matches(&pattern, &directory, &mut std::io::stdout())
     .map_err(|err| format!("{}: {}", directory.display(), get_msg_from_io_error(&err)))?;
 
   Ok(())
@@ -39,13 +38,9 @@ fn get_msg_from_io_error(err: &io::Error) -> String {
   }
 }
 
-fn parse_input() -> CliArgs {
-  CliArgs::parse()
-}
-
 fn find_and_write_matches(
   pattern: &str,
-  directory: &PathBuf,
+  directory: &std::path::Path,
   writer: &mut impl std::io::Write,
 ) -> Result<(), io::Error> {
   let entries = std::fs::read_dir(directory)?;
@@ -54,7 +49,7 @@ fn find_and_write_matches(
     let entry = entry?;
     let path = entry.path();
 
-    if does_file_or_dir_match_pattern(&pattern, &path) {
+    if does_file_or_dir_match_pattern(pattern, &path) {
       writeln!(writer, "{}", path.display())?;
     }
 
@@ -69,15 +64,10 @@ fn find_and_write_matches(
   Ok(())
 }
 
-fn does_file_or_dir_match_pattern(pattern: &str, directory: &PathBuf) -> bool {
+fn does_file_or_dir_match_pattern(pattern: &str, directory: &std::path::Path) -> bool {
   directory
     .file_name()
     .and_then(|os_str| os_str.to_str())
     .map(|str| str.starts_with(pattern))
     .unwrap_or(false)
-}
-
-// for now, we're not doing any validation
-fn validate_args(args: &CliArgs) -> Result<&CliArgs, String> {
-  Ok(args)
 }
