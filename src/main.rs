@@ -32,12 +32,10 @@ fn run() -> Result<(), String> {
 fn get_msg_from_io_error(err: &io::Error) -> String {
   let kind = err.kind();
 
-  if kind == io::ErrorKind::NotFound {
-    String::from("no such file or directory")
-  } else if kind == io::ErrorKind::PermissionDenied {
-    String::from("permission denied")
-  } else {
-    String::from("unknown error")
+  match kind {
+    io::ErrorKind::NotFound => String::from("no such file or directory"),
+    io::ErrorKind::PermissionDenied => String::from("permission denied"),
+    _ => String::from("unknown error"),
   }
 }
 
@@ -57,7 +55,7 @@ fn find_and_write_matches(
     let path = entry.path();
 
     if does_file_or_dir_match_pattern(&pattern, &path) {
-      writeln!(writer, "{}", path.display()).unwrap();
+      writeln!(writer, "{}", path.display())?;
     }
 
     if path.is_dir() {
