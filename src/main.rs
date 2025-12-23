@@ -72,13 +72,11 @@ fn find_and_write_matches(
 }
 
 fn does_file_or_dir_match_pattern(pattern: &str, directory: &PathBuf) -> bool {
-  if let Some(file_or_dir_name) = directory.file_name() {
-    let file_or_dir_name = file_or_dir_name.display().to_string();
-
-    file_or_dir_name.starts_with(pattern)
-  } else {
-    false
-  }
+  directory
+    .file_name()
+    .and_then(|os_str| os_str.to_str())
+    .map(|str| str.starts_with(pattern))
+    .unwrap_or(false)
 }
 
 // for now, we're not doing any validation
