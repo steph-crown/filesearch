@@ -5,7 +5,7 @@ This is a CLI tool that allows you search for files that matches a given pattern
 ## Usage
 
 ```bash
-filesearch <pattern> [directory] [flags]
+filesearch <pattern> [directory]
 ```
 
 - `<pattern>` (required): Then search pattern to match against file names.
