@@ -53,7 +53,7 @@ fn find_and_write_matches(
   for entry in entries {
     let path = entry?.path();
 
-    if does_file_or_dir_match_pattern(&path, matcher) {
+    if is_match(&path, matcher) {
       writeln!(writer, "{}", path.display())?;
     }
 
@@ -68,7 +68,7 @@ fn find_and_write_matches(
   Ok(())
 }
 
-fn does_file_or_dir_match_pattern(directory: &std::path::Path, matcher: &GlobMatcher) -> bool {
+fn is_match(directory: &std::path::Path, matcher: &GlobMatcher) -> bool {
   directory
     .file_name()
     .map(|str| matcher.is_match(str))
