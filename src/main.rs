@@ -1,4 +1,5 @@
 use clap::Parser;
+use globset::{Glob, GlobMatcher};
 use std::{io, path::PathBuf};
 
 /// CLI tool to search for files within a directory (Simple version of `find`)
@@ -22,7 +23,11 @@ fn main() {
 fn run() -> Result<(), String> {
   let CliArgs { pattern, directory } = CliArgs::parse();
 
-  find_and_write_matches(&pattern, &directory, &mut std::io::stdout())
+  let matcher = Glob::new(&pattern)
+    .map_err(|_| String::from(format!("{}: invalid pattern provided", directory.display())))?
+    .compile_matcher();
+
+  find_and_write_matches(&directory, &mut std::io::stdout(), &matcher)
     .map_err(|err| format!("{}: {}", directory.display(), get_msg_from_io_error(&err)))?;
 
   Ok(())
@@ -39,22 +44,21 @@ fn get_msg_from_io_error(err: &io::Error) -> String {
 }
 
 fn find_and_write_matches(
-  pattern: &str,
   directory: &std::path::Path,
   writer: &mut impl std::io::Write,
+  matcher: &GlobMatcher,
 ) -> Result<(), io::Error> {
   let entries = std::fs::read_dir(directory)?;
 
   for entry in entries {
-    let entry = entry?;
-    let path = entry.path();
+    let path = entry?.path();
 
-    if does_file_or_dir_match_pattern(pattern, &path) {
+    if does_file_or_dir_match_pattern(&path, matcher) {
       writeln!(writer, "{}", path.display())?;
     }
 
     if path.is_dir() {
-      if let Err(err) = find_and_write_matches(pattern, &path, writer) {
+      if let Err(err) = find_and_write_matches(&path, writer, matcher) {
         let err_msg = get_msg_from_io_error(&err);
         eprintln!("filesearch: {}: {}", path.display(), err_msg);
       }
@@ -64,10 +68,9 @@ fn find_and_write_matches(
   Ok(())
 }
 
-fn does_file_or_dir_match_pattern(pattern: &str, directory: &std::path::Path) -> bool {
+fn does_file_or_dir_match_pattern(directory: &std::path::Path, matcher: &GlobMatcher) -> bool {
   directory
     .file_name()
-    .and_then(|os_str| os_str.to_str())
-    .map(|str| str.starts_with(pattern))
+    .map(|str| matcher.is_match(str))
     .unwrap_or(false)
 }
